@@ -1547,9 +1547,27 @@ function sTeamGenerator(evId){
 }
 
 
+
+function buildTeamsFromPlayers(players){
+  // Snake-draft by OVR for fair split
+  var sorted=players.slice().sort(function(a,b){return ovrNum(b)-ovrNum(a);});
+  var teamA=[],teamB=[],i;
+  for(i=0;i<sorted.length;i++){
+    if(Math.floor(i/2)%2===0){i%2===0?teamA.push(sorted[i]):teamB.push(sorted[i]);}
+    else{i%2===0?teamB.push(sorted[i]):teamA.push(sorted[i]);}
+  }
+  var fkA=pickFm(teamA.length),fkB=pickFm(teamB.length);
+  var plA=assignFM(teamA,fkA).map(function(p){return{id:p.id,fn:p.fn,ovr:ovrNum(p),fp:p.fp};});
+  var plB=assignFM(teamB,fkB).map(function(p){return{id:p.id,fn:p.fn,ovr:ovrNum(p),fp:p.fp};});
+  return{
+    A:{pl:plA,fm:fkA},
+    B:{pl:plB,fm:fkB}
+  };
+}
+
 function sTeamsResult(playerIds){
   var players=playerIds.map(function(id){return getUser(id);}).filter(function(p){return p!==null;});
-  if(players.length<4){go('teamGenerator');return'';}
+  if(players.length<4){go('teams');return'';}
   var t=buildTeamsFromPlayers(players);
   var aA=t.A.pl.length>0?Math.round(t.A.pl.reduce(function(s,p){return s+p.ovr;},0)/t.A.pl.length):0;
   var aB=t.B.pl.length>0?Math.round(t.B.pl.reduce(function(s,p){return s+p.ovr;},0)/t.B.pl.length):0;
@@ -1566,7 +1584,7 @@ function sTeamsResult(playerIds){
         +'</div>';
     }).join('');
   }
-  return '<div>'+mkTB('Teams','teamGenerator')
+  return '<div>'+mkTB('Teams','teams')
     +'<div style="padding:0 18px 90px;">'
     +'<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 18px;">'
     +'<div style="text-align:center;"><div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#fff,#ccc);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin:0 auto 4px;">A</div>'
@@ -1581,7 +1599,7 @@ function sTeamsResult(playerIds){
     +'<p style="font-size:10px;color:#5B7A94;text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px;">Team B &middot; '+t.B.fm+'</p>'
     +mkPitch(t.B,'#374151','#ffffff')
     +teamList(t.B.pl,'#5B7A94')
-    +'<button class="btn btn-gold" style="margin-top:14px;" data-go="teamGenerator"><i class="ti ti-refresh" style="vertical-align:-2px;margin-right:6px;"></i>Neu auswaehlen</button>'
+    +'<button class="btn btn-gold" style="margin-top:14px;" data-go="teams"><i class="ti ti-refresh" style="vertical-align:-2px;margin-right:6px;"></i>Neu auswaehlen</button>'
     +'</div>'+mkBN('teams')+'</div>';
 }
 
